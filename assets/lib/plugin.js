@@ -1,7 +1,7 @@
 var cheerio = require('cheerio');
 var slug = require('github-slugid');
 var Config = require('./config.js');
-
+var md5 = require('md5')
 
 /**
  * 处理toc相关，同时处理标题和id
@@ -72,9 +72,21 @@ function addId(header, titleCountMap) {
  */
 function titleAddAnchor(header, id) {
     header.prepend('<a name="' + id + '" class="anchor-navigation-ex-anchor" '
-        + 'href="#' + id + '">'
+        + 'href="#' + genarateAnchorUsingMD5(id) + '">'
         + '<i class="fa fa-link" aria-hidden="true"></i>'
         + '</a>');
+}
+
+/**
+ * 锚点使用 MD5 加签并取前8位
+ * @param name
+ */
+function genarateAnchorUsingMD5(name){
+  if(!name){
+    return ''
+  }else{
+    return md5(name).slice(0,8)
+  }
 }
 
 /**

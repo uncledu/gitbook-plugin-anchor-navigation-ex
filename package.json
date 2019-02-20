@@ -24,8 +24,9 @@
   "homepage": "https://github.com/zq99299/gitbook-plugin-anchor-navigation-ex#readme",
   "dependencies": {
     "cheerio": "*",
+    "colors": "^1.1.2",
     "github-slugid": "1.0.1",
-    "colors": "^1.1.2"
+    "md5": "^2.2.1"
   },
   "engines": {
     "gitbook": ">=3.0.0"
@@ -52,12 +53,12 @@
         "default": true,
         "title": "是否显示返回顶部按钮"
       },
-      "printLog":{
+      "printLog": {
         "type": "boolean",
         "default": false,
         "title": "是否打印处理进度日志，方便排错"
       },
-      "multipleH1":{
+      "multipleH1": {
         "type": "boolean",
         "default": true,
         "title": "false:去掉每页开头H1标题被重写成1. xxx（如果您的md文档遵循一个md文件只有一个H1标题的话)"
