@@ -1,6 +1,6 @@
 {
   "name": "gitbook-plugin-anchor-navigation-ex-custom",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Supports two navigation mode, title, anchor effect is the default theme, style, follow the website",
   "main": "index.js",
   "scripts": {
@@ -8,20 +8,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zq99299/gitbook-plugin-anchor-navigation-ex.git"
+    "url": "git+https://github.com/zq99299/gitbook-plugin-anchor-navigation-ex-custom.git"
   },
   "keywords": [
     "gitbook",
     "plugin",
-    "anchor-navigation-ex",
+    "anchor-navigation-ex-custom",
     "ex"
   ],
   "author": "zhuqiang,yuan1994",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/zq99299/gitbook-plugin-anchor-navigation-ex/issues"
+    "url": "https://github.com/uncledu/gitbook-plugin-anchor-navigation-ex-custom/issues"
   },
-  "homepage": "https://github.com/zq99299/gitbook-plugin-anchor-navigation-ex#readme",
+  "homepage": "https://github.com/uncledu/gitbook-plugin-anchor-navigation-ex#readme",
   "dependencies": {
     "cheerio": "*",
     "colors": "^1.1.2",

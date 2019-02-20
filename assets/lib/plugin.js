@@ -71,7 +71,7 @@ function addId(header, titleCountMap) {
  * @param id
  */
 function titleAddAnchor(header, id) {
-    header.prepend('<a name="' + id + '" class="anchor-navigation-ex-anchor" '
+    header.prepend('<a name="' + genarateAnchorUsingMD5(id) + '" class="anchor-navigation-ex-anchor" '
         + 'href="#' + genarateAnchorUsingMD5(id) + '">'
         + '<i class="fa fa-link" aria-hidden="true"></i>'
         + '</a>');
