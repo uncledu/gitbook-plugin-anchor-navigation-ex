@@ -37,7 +37,7 @@ function handlerTocs($, page, modifyHeader) {
                     handlerH3Toc(config, count, header, tocs, page.level, modifyHeader);
                     break;
                 default:
-                    titleAddAnchor(header, id);
+                    titleAddAnchor(header, generateAnchorUsingMD5(header.text()));
                     break;
             }
         }
@@ -57,11 +57,10 @@ function addId(header, titleCountMap) {
     var id = header.attr('id') || slug(header.text());
     var titleCount = titleCountMap[id] || 0;
     titleCountMap[id] = titleCount + 1;
-    // console.log('id:', id, 'n:', titleCount, 'hashmap:', titleCountMap)
     if (titleCount) {//此标题已经存在  null/undefined/0/NaN/ 表达式时，统统被解释为false
         id = id + '_' + titleCount;
     }
-    header.attr("id", id);
+    header.attr("id", generateAnchorUsingMD5(header.text()));
     return id;
 }
 
@@ -70,9 +69,10 @@ function addId(header, titleCountMap) {
  * @param header
  * @param id
  */
-function titleAddAnchor(header, id) {
-    header.prepend('<a name="' + genarateAnchorUsingMD5(id) + '" class="anchor-navigation-ex-anchor" '
-        + 'href="#' + genarateAnchorUsingMD5(id) + '">'
+function titleAddAnchor(header, url) {
+    header.prepend(`<div id=${url}></div>`)
+    header.prepend('<a data-text="'+url+'"id="' + url + '" class="anchor-navigation-ex-anchor" '
+        + 'href="#' + url + '">'
         + '<i class="fa fa-link" aria-hidden="true"></i>'
         + '</a>');
 }
@@ -81,10 +81,10 @@ function titleAddAnchor(header, id) {
  * 锚点使用 MD5 加签并取前8位
  * @param name
  */
-function genarateAnchorUsingMD5(name){
+function generateAnchorUsingMD5(name){
   if(!name){
     return ''
-  }else{
+  } else {
     return md5(name).slice(0,8)
   }
 }
@@ -119,11 +119,11 @@ function handlerH1Toc(config, count, header, tocs, pageLevel, modifyHeader) {
         }
         header.text(level + title); //重写标题
     }
-    titleAddAnchor(header, id);
+    titleAddAnchor(header, generateAnchorUsingMD5(title));
     tocs.push({
         name: title,
         level: level,
-        url: id,
+        url: generateAnchorUsingMD5(title),
         children: []
     });
 }
@@ -170,11 +170,11 @@ function handlerH2Toc(config, count, header, tocs, pageLevel, modifyHeader) {
         }
         header.text(level + title); //重写标题
     }
-    titleAddAnchor(header, id);
+    titleAddAnchor(header, generateAnchorUsingMD5(title));
     h1Toc.children.push({
         name: title,
         level: level,
-        url: id,
+        url: generateAnchorUsingMD5(title),
         children: []
     });
 }
@@ -233,11 +233,11 @@ function handlerH3Toc(config, count, header, tocs, pageLevel, modifyHeader) {
         }
         header.text(level + title); //重写标题
     }
-    titleAddAnchor(header, id);
+    titleAddAnchor(header, generateAnchorUsingMD5(title));
     h2Toc.children.push({
         name: title,
         level: level,
-        url: id,
+        url: generateAnchorUsingMD5(title),
         children: []
     });
 }
