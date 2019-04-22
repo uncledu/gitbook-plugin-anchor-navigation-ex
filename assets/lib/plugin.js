@@ -1,7 +1,9 @@
 var cheerio = require('cheerio');
 var slug = require('github-slugid');
 var Config = require('./config.js');
-var md5 = require('md5')
+const HeadingId = require('heading-id');
+
+const calculater = new HeadingId();
 
 /**
  * 处理toc相关，同时处理标题和id
@@ -82,11 +84,7 @@ function titleAddAnchor(header, url) {
  * @param name
  */
 function generateAnchorUsingMD5(name){
-  if(!name){
-    return ''
-  } else {
-    return md5(name).slice(0,8)
-  }
+    return calculater.id(name)
 }
 
 /**

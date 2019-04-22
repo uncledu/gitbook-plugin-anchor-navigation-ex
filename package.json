@@ -1,6 +1,6 @@
 {
   "name": "gitbook-plugin-anchor-navigation-ex-custom",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Supports two navigation mode, title, anchor effect is the default theme, style, follow the website",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "cheerio": "*",
     "colors": "^1.1.2",
     "github-slugid": "1.0.1",
-    "md5": "^2.2.1"
+    "heading-id": "^1.0.0"
   },
   "engines": {
     "gitbook": ">=3.0.0"
