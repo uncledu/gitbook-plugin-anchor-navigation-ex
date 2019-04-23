@@ -1,9 +1,9 @@
-var cheerio = require('cheerio');
-var slug = require('github-slugid');
-var Config = require('./config.js');
+let cheerio = require('cheerio');
+let slug = require('github-slugid');
+let Config = require('./config.js');
 const HeadingId = require('heading-id');
 
-const calculater = new HeadingId();
+let calculater;
 
 /**
  * 处理toc相关，同时处理标题和id
@@ -13,33 +13,33 @@ const calculater = new HeadingId();
  * @returns {Array} 返回处理好的tocs合集
  */
 function handlerTocs($, page, modifyHeader) {
-    var config = Config.config;
-    var tocs = [];
+    let config = Config.config;
+    let tocs = [];
 
-    var count = {
+    let count = {
         h1: 0,
         h2: 0,
         h3: 0
     };
-    var titleCountMap = {}; // 用来记录标题出现的次数
-    var h1 = 0, h2 = 0, h3 = 0;
+    let titleCountMap = {}; // 用来记录标题出现的次数
+    let h1 = 0, h2 = 0, h3 = 0;
     $(':header').each(function (i, elem) {
-        var header = $(elem);
-        var id = addId(header, titleCountMap);
-
+        let header = $(elem);
+        let id = addId(header, titleCountMap);
+        let generatedAnchor=generateAnchorUsingMD5(header.text())
         if (id) {
             switch (elem.tagName) {
                 case "h1":
-                    handlerH1Toc(config, count, header, tocs, page.level, modifyHeader);
+                    handlerH1Toc(config, count, header, tocs, page.level, modifyHeader, generatedAnchor);
                     break;
                 case "h2":
-                    handlerH2Toc(config, count, header, tocs, page.level, modifyHeader);
+                    handlerH2Toc(config, count, header, tocs, page.level, modifyHeader, generatedAnchor);
                     break;
                 case "h3":
-                    handlerH3Toc(config, count, header, tocs, page.level, modifyHeader);
+                    handlerH3Toc(config, count, header, tocs, page.level, modifyHeader, generatedAnchor);
                     break;
                 default:
-                    titleAddAnchor(header, generateAnchorUsingMD5(header.text()));
+                    titleAddAnchor(header, generatedAnchor);
                     break;
             }
         }
@@ -56,13 +56,8 @@ function handlerTocs($, page, modifyHeader) {
  * @returns {string}
  */
 function addId(header, titleCountMap) {
-    var id = header.attr('id') || slug(header.text());
-    var titleCount = titleCountMap[id] || 0;
-    titleCountMap[id] = titleCount + 1;
-    if (titleCount) {//此标题已经存在  null/undefined/0/NaN/ 表达式时，统统被解释为false
-        id = id + '_' + titleCount;
-    }
-    header.attr("id", generateAnchorUsingMD5(header.text()));
+    let id = header.attr('id') || slug(header.text());
+    // header.attr("id", generateAnchorUsingMD5(header.text()));
     return id;
 }
 
@@ -72,8 +67,13 @@ function addId(header, titleCountMap) {
  * @param id
  */
 function titleAddAnchor(header, url) {
-    header.prepend(`<div id=${url}></div>`)
-    header.prepend('<a data-text="'+url+'"id="' + url + '" class="anchor-navigation-ex-anchor" '
+    //header.prepend(`<a name=${url}></a>`)
+    //header.prepend(`<a name=${url+'float'}></a>`)
+    //header.prepend(`<div id=${url}></div>`)
+    let originalId=header.attr('id')
+    header.attr('id',url)
+    header.attr('data-id', originalId)
+    header.prepend('<a data-text="'+url + '" class="anchor-navigation-ex-anchor" '
         + 'href="#' + url + '">'
         + '<i class="fa fa-link" aria-hidden="true"></i>'
         + '</a>');
@@ -93,10 +93,10 @@ function generateAnchorUsingMD5(name){
  * @param header
  * @param tocs 根节点
  */
-function handlerH1Toc(config, count, header, tocs, pageLevel, modifyHeader) {
-    var title = header.text();
-    var id = header.attr('id');
-    var level = ''; //层级
+function handlerH1Toc(config, count, header, tocs, pageLevel, modifyHeader,  generatedAnchor) {
+    let title = header.text();
+    let id = header.attr('id');
+    let level = ''; //层级
 
     if (config.showLevel) {
         //层级显示仅在需要的时候处理
@@ -117,11 +117,11 @@ function handlerH1Toc(config, count, header, tocs, pageLevel, modifyHeader) {
         }
         header.text(level + title); //重写标题
     }
-    titleAddAnchor(header, generateAnchorUsingMD5(title));
+    titleAddAnchor(header, generatedAnchor);
     tocs.push({
         name: title,
         level: level,
-        url: generateAnchorUsingMD5(title),
+        url: generatedAnchor,
         children: []
     });
 }
@@ -131,10 +131,10 @@ function handlerH1Toc(config, count, header, tocs, pageLevel, modifyHeader) {
  * @param count 计数器
  * @param header
  */
-function handlerH2Toc(config, count, header, tocs, pageLevel, modifyHeader) {
-    var title = header.text();
-    var id = header.attr('id');
-    var level = ''; //层级
+function handlerH2Toc(config, count, header, tocs, pageLevel, modifyHeader, generatedAnchor) {
+    let title = header.text();
+    let id = header.attr('id');
+    let level = ''; //层级
 
     if (tocs.length <= 0) {
         //一级节点为空时，生成一个空的一级节点，让二级节点附带在这个上面
@@ -150,8 +150,8 @@ function handlerH2Toc(config, count, header, tocs, pageLevel, modifyHeader) {
         });
     }
 
-    var h1Index = tocs.length - 1;
-    var h1Toc = tocs[h1Index];
+    let h1Index = tocs.length - 1;
+    let h1Toc = tocs[h1Index];
     if (config.showLevel) {
         count.h2 += 1;
         count.h3 = 0;
@@ -168,11 +168,11 @@ function handlerH2Toc(config, count, header, tocs, pageLevel, modifyHeader) {
         }
         header.text(level + title); //重写标题
     }
-    titleAddAnchor(header, generateAnchorUsingMD5(title));
+    titleAddAnchor(header, generatedAnchor);
     h1Toc.children.push({
         name: title,
         level: level,
-        url: generateAnchorUsingMD5(title),
+        url: generatedAnchor,
         children: []
     });
 }
@@ -182,10 +182,10 @@ function handlerH2Toc(config, count, header, tocs, pageLevel, modifyHeader) {
  * @param count 计数器
  * @param header
  */
-function handlerH3Toc(config, count, header, tocs, pageLevel, modifyHeader) {
-    var title = header.text();
-    var id = header.attr('id');
-    var level = ''; //层级
+function handlerH3Toc(config, count, header, tocs, pageLevel, modifyHeader, generatedAnchor) {
+    let title = header.text();
+    let id = header.attr('id');
+    let level = ''; //层级
 
     if (tocs.length <= 0) {
         //一级节点为空时，生成一个空的一级节点，让二级节点附带在这个上面
@@ -199,9 +199,9 @@ function handlerH3Toc(config, count, header, tocs, pageLevel, modifyHeader) {
             children: []
         });
     }
-    var h1Index = tocs.length - 1;
-    var h1Toc = tocs[h1Index];
-    var h2Tocs = h1Toc.children;
+    let h1Index = tocs.length - 1;
+    let h1Toc = tocs[h1Index];
+    let h2Tocs = h1Toc.children;
     if (h2Tocs.length <= 0) {
         //二级节点为空时，生成一个空的二级节点，让三级节点附带在这个上面
         if (config.showLevel) {
@@ -214,7 +214,7 @@ function handlerH3Toc(config, count, header, tocs, pageLevel, modifyHeader) {
             children: []
         });
     }
-    var h2Toc = h1Toc.children[h2Tocs.length - 1];
+    let h2Toc = h1Toc.children[h2Tocs.length - 1];
 
     if (config.showLevel) {
         count.h3 += 1;
@@ -231,11 +231,11 @@ function handlerH3Toc(config, count, header, tocs, pageLevel, modifyHeader) {
         }
         header.text(level + title); //重写标题
     }
-    titleAddAnchor(header, generateAnchorUsingMD5(title));
+    titleAddAnchor(header, generatedAnchor);
     h2Toc.children.push({
         name: title,
         level: level,
-        url: generateAnchorUsingMD5(title),
+        url: generatedAnchor,
         children: []
     });
 }
@@ -246,35 +246,35 @@ function handlerH3Toc(config, count, header, tocs, pageLevel, modifyHeader) {
  * @returns {string}
  */
 function handlerFloatNavbar($, tocs) {
-    var config = Config.config;
-    var float = config.float;
-    var floatIcon = float.floatIcon;
-    var level1Icon = '';
-    var level2Icon = '';
-    var level3Icon = '';
+    let config = Config.config;
+    let float = config.float;
+    let floatIcon = float.floatIcon;
+    let level1Icon = '';
+    let level2Icon = '';
+    let level3Icon = '';
     if (float.showLevelIcon) {
         level1Icon = float.level1Icon;
         level2Icon = float.level2Icon;
         level3Icon = float.level3Icon;
     }
 
-    var html = "<div id='anchor-navigation-ex-navbar'><i class='" + floatIcon + "'></i><ul>";
-    for (var i = 0; i < tocs.length; i++) {
-        var h1Toc = tocs[i];
+    let html = "<div id='anchor-navigation-ex-navbar'><i class='" + floatIcon + "'></i><ul>";
+    for (let i = 0; i < tocs.length; i++) {
+        let h1Toc = tocs[i];
         if (h1Toc.name){
-            html += "<li><span class='title-icon " + level1Icon + "'></span><a href='#" + h1Toc.url + "'><b>" + h1Toc.level + "</b>" + h1Toc.name + "</a></li>";
+            html += "<li><span class='title-icon " + level1Icon + "'></span><a href='#" + h1Toc.url+'float' + "'><b>" + h1Toc.level + "</b>" + h1Toc.name + "</a></li>";
         }
         if (h1Toc.children.length > 0) {
             html += "<ul>"
-            for (var j = 0; j < h1Toc.children.length; j++) {
-                var h2Toc = h1Toc.children[j];
+            for (let j = 0; j < h1Toc.children.length; j++) {
+                let h2Toc = h1Toc.children[j];
                 if(h2Toc.name){
                     html += "<li><span class='title-icon " + level2Icon + "'></span><a href='#" + h2Toc.url + "'><b>" + h2Toc.level + "</b>" + h2Toc.name + "</a></li>";
                 }
                 if (h2Toc.children.length > 0) {
                     html += "<ul>";
-                    for (var k = 0; k < h2Toc.children.length; k++) {
-                        var h3Toc = h2Toc.children[k];
+                    for (let k = 0; k < h2Toc.children.length; k++) {
+                        let h3Toc = h2Toc.children[k];
                         html += "<li><span class='title-icon " + level3Icon + "'></span><a href='#" + h3Toc.url + "'><b>" + h3Toc.level + "</b>" + h3Toc.name + "</a></li>";
                     }
                     html += "</ul>";
@@ -292,34 +292,34 @@ function handlerPageTopNavbar($, tocs) {
 }
 
 function buildTopNavbar($, tocs) {
-    var config = Config.config;
-    var pageTop = config.pageTop;
-    var level1Icon = '';
-    var level2Icon = '';
-    var level3Icon = '';
+    let config = Config.config;
+    let pageTop = config.pageTop;
+    let level1Icon = '';
+    let level2Icon = '';
+    let level3Icon = '';
     if (pageTop.showLevelIcon) {
         level1Icon = pageTop.level1Icon;
         level2Icon = pageTop.level2Icon;
         level3Icon = pageTop.level3Icon;
     }
 
-    var html = "<div id='anchor-navigation-ex-pagetop-navbar'><ul>";
-    for (var i = 0; i < tocs.length; i++) {
-        var h1Toc = tocs[i];
+    let html = "<div id='anchor-navigation-ex-pagetop-navbar'><ul>";
+    for (let i = 0; i < tocs.length; i++) {
+        let h1Toc = tocs[i];
         if(h1Toc.name){
             html += "<li><span class='title-icon " + level1Icon + "'></span><a href='#" + h1Toc.url + "'><b>" + h1Toc.level + "</b>" + h1Toc.name + "</a></li>";
         }
         if (h1Toc.children.length > 0) {
             html += "<ul>"
-            for (var j = 0; j < h1Toc.children.length; j++) {
-                var h2Toc = h1Toc.children[j];
+            for (let j = 0; j < h1Toc.children.length; j++) {
+                let h2Toc = h1Toc.children[j];
                 if(h2Toc.name){
                     html += "<li><span class='title-icon " + level2Icon + "'></span><a href='#" + h2Toc.url + "'><b>" + h2Toc.level + "</b>" + h2Toc.name + "</a></li>";
                 }
                 if (h2Toc.children.length > 0) {
                     html += "<ul>";
-                    for (var k = 0; k < h2Toc.children.length; k++) {
-                        var h3Toc = h2Toc.children[k];
+                    for (let k = 0; k < h2Toc.children.length; k++) {
+                        let h3Toc = h2Toc.children[k];
                         html += "<li><span class='title-icon " + level3Icon + "'></span><a href='#" + h3Toc.url + "'><b>" + h3Toc.level + "</b>" + h3Toc.name + "</a></li>";
                     }
                     html += "</ul>";
@@ -340,8 +340,8 @@ function buildTopNavbar($, tocs) {
  * @returns {string}
  */
 function buildGoTop(tocs) {
-    var config = Config.config;
-    var html = "";
+    let config = Config.config;
+    let html = "";
     if (config.showGoTop && tocs && tocs.length > 0) {
         html = "<a href='#" + tocs[0].url + "' id='anchorNavigationExGoTop'><i class='fa fa-arrow-up'></i></a>";
     }
@@ -349,30 +349,32 @@ function buildGoTop(tocs) {
 }
 
 function start(bookIns, page) {
-    var $ = cheerio.load(page.content);
-    var modifyHeader = !/<!--[ \t]*ex_nolevel[ \t]*-->/.test(page.content)
+
+    calculater = new HeadingId();
+    let $ = cheerio.load(page.content);
+    let modifyHeader = !/<!--[ \t]*ex_nolevel[ \t]*-->/.test(page.content)
 
     // 处理toc相关，同时处理标题和id
-    var tocs = handlerTocs($, page, modifyHeader);
+    let tocs = handlerTocs($, page, modifyHeader);
 
     // 设置处理之后的内容
     if (tocs.length == 0) {
         page.content = $.html();
         return;
     }
-    var html = "";
+    let html = "";
     if (!/<!--[ \t]*ex_nonav[ \t]*-->/.test(page.content)) {
-        var config = Config.config;
-        var mode = config.mode;
+        let config = Config.config;
+        let mode = config.mode;
         if (mode == 'float') {
-            html = handlerFloatNavbar($, tocs);
+            // html = handlerFloatNavbar($, tocs);
         } else if (mode == 'pageTop') {
             html = handlerPageTopNavbar($, tocs);
         }
     }
     html += buildGoTop(tocs);
     page.content = html + $.html();
-    var $x = cheerio.load(page.content);
+    let $x = cheerio.load(page.content);
     $x('extoc').replaceWith($x(buildTopNavbar($, tocs, page)));
     page.content = $x.html();
 }
